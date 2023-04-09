@@ -10,7 +10,7 @@ export var generate_collisions: bool = false
 
 
 var material_counter: int = 0
-var collision_parent: Node
+var collision_node: StaticBody
 
 
 func _ready():
@@ -31,9 +31,9 @@ func bake_meshes(value):
 		mesh = null
 	
 	if generate_collisions:
-		collision_parent = StaticBody.new()
-		add_child(collision_parent)
-		collision_parent.owner = get_tree().edited_scene_root
+		collision_node = StaticBody.new()
+		add_child(collision_node)
+		collision_node.owner = get_tree().edited_scene_root
 	else:
 		clean_collisions()
 	
@@ -82,7 +82,7 @@ func extract_mesh(node: MeshInstance, new_mesh: ArrayMesh):
 
 
 func generate_collison(node):
-	if !collision_parent:
+	if !collision_node:
 		return
 	for child in node.get_children():
 		if child is StaticBody and child.get_child_count() > 0:
@@ -90,7 +90,7 @@ func generate_collison(node):
 				if grandchild is CollisionShape:
 					var new_col := CollisionShape.new()
 					new_col.global_transform = child.global_transform
-					collision_parent.add_child(new_col)
+					collision_node.add_child(new_col)
 					new_col.shape = grandchild.shape
 					new_col.set_owner(get_tree().get_edited_scene_root())
 
