@@ -4,3 +4,6 @@
 ## Limitations:
 - No animations
 - The script only scans nodes up to two levels deep
+
+Based on tomankirilov MeshMerger:
+https://github.com/tomankirilov/MeshMerger
