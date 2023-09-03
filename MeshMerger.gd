@@ -114,19 +114,34 @@ func combine_materials(mesh: ArrayMesh) -> ArrayMesh:
 	return result_mesh
 
 
+func get_shapes(node: Node) -> Array:
+	var shapes := []
+	
+	if node is CollisionShape:
+		shapes.append(node)
+	
+	for child in node.get_children():
+		var child_shapes := get_shapes(child)
+		shapes.append_array(child_shapes)
+	
+	return shapes
+
+
 func generate_collison(node):
 	if !collision_node:
 		return
-	for child in node.get_children():
-		if child is StaticBody and child.get_child_count() > 0:
-			for grandchild in child.get_children():
-				if grandchild is CollisionShape:
-					var new_col := CollisionShape.new()
-					new_col.global_transform = child.global_transform
-					new_col.transform.origin = new_col.transform.origin - global_transform.origin
-					collision_node.add_child(new_col)
-					new_col.shape = grandchild.shape
-					new_col.set_owner(get_tree().get_edited_scene_root())
+	
+	var collisions := []
+	for node in get_children():
+		collisions.append_array(get_shapes(node))
+	
+	for shape in collisions:
+		var new_col := CollisionShape.new()
+		new_col.global_transform = shape.global_transform
+		new_col.transform.origin = new_col.transform.origin - global_transform.origin
+		collision_node.add_child(new_col)
+		new_col.shape = shape.shape
+		new_col.set_owner(get_tree().get_edited_scene_root())
 
 
 func clean_collisions() -> void:
