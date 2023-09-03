@@ -14,6 +14,8 @@ var collision_node: StaticBody
 
 
 func _ready() -> void:
+	if Engine.editor_hint:
+		return
 	if delete_child_meshes_on_play:
 		for node in get_children():
 			if not node is StaticBody:
@@ -37,20 +39,33 @@ func bake_meshes(value: bool) -> void:
 	material_counter = 0
 	var new_mesh := ArrayMesh.new()
 	
-	# A bit sketchy, but I know no other way to get MeshInstances at more that one level deep
-	for node in get_children():
-		if node is MeshInstance:
-			new_mesh = extract_mesh(node, new_mesh)
-			generate_collison(node)
-		for nodeChild in node.get_children():
-			if nodeChild is MeshInstance:
-				new_mesh = extract_mesh(nodeChild, new_mesh)
-				generate_collison(nodeChild)
+	var all_meshes := []
+	for child in get_children():
+		all_meshes.append_array(get_meshinstances(child))
+	
+	for node in all_meshes:
+		new_mesh = extract_mesh(node, new_mesh)
+		generate_collison(node)
 	
 	new_mesh = combine_materials(new_mesh)
 	
 	set_children_visibility(false)
 	self.mesh = new_mesh
+
+
+func get_meshinstances(node: Node):
+	var meshInstances := []
+
+	# Check if the current node is a MeshInstance
+	if node is MeshInstance:
+		meshInstances.append(node)
+	
+	# Recursively traverse child nodes
+	for child in node.get_children():
+		var childMeshInstances = get_meshinstances(child)
+		meshInstances.append_array(childMeshInstances)
+	
+	return meshInstances
 
 
 # warning-ignore:unused_argument
