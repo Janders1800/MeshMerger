@@ -65,15 +65,11 @@ func clean_meshes(value: bool) -> void:
 
 func extract_mesh(node: MeshInstance, new_mesh: ArrayMesh) -> ArrayMesh:
 	for i in range(node.mesh.get_surface_count()):
-		var data: Array = node.mesh.surface_get_arrays(i)
-		var offset: PoolVector3Array = data[ArrayMesh.ARRAY_VERTEX]
+		var surf_tool := SurfaceTool.new()
+		var final_transform: Transform = Transform(node.global_transform.basis, node.global_transform.origin - global_transform.origin)
+		surf_tool.append_from(node.mesh, i, final_transform)
 		
-		for o in range(offset.size()):
-			offset.set(o, node.global_transform.basis.xform(offset[o]) + node.global_transform.origin - global_transform.origin)
-		
-		data[ArrayMesh.ARRAY_VERTEX] = offset
-		
-		new_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, data)
+		new_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surf_tool.commit_to_arrays())
 		new_mesh.surface_set_material(material_counter, node.mesh.surface_get_material(i))
 		material_counter += 1
 		
